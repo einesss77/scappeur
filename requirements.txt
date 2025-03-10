@@ -1,6 +1,5 @@
 flask
 requests
-sqlite3
 selenium
 pandas
 schedule
