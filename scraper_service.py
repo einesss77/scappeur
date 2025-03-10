@@ -1,3 +1,5 @@
+import datetime
+
 import schedule
 import time
 import requests
@@ -39,6 +41,8 @@ def check_new_projects():
 
     new_entries = [p for p in new_projects if p[1] not in old_projects]  # Compare les titres
 
+    with open("scraper_log.txt", "a") as log_file:
+        log_file.write(f"[{datetime.datetime.now()}] - Scraping exécuté\n")
     if new_entries:
         message = "🚀 Nouveaux projets trouvés sur Codeur.com :\n"
         for project in new_entries:
