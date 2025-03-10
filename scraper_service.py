@@ -33,9 +33,11 @@ def get_latest_projects():
 
 def check_new_projects():
     """ Vérifie s'il y a de nouveaux projets et envoie une notification """
-    old_projects = set(get_latest_projects())  # Récupère les projets actuels
-    new_projects = scrape_projects()  # Scrape les nouveaux projets
-    new_entries = set(get_latest_projects()) - old_projects  # Compare les anciens et nouveaux projets
+    old_projects = {p[1] for p in get_latest_projects()}  # Récupère les anciens titres de projets
+    scrape_projects()  # Lance le scraping et met à jour la base
+    new_projects = get_latest_projects()  # Récupère les projets après scraping
+
+    new_entries = [p for p in new_projects if p[1] not in old_projects]  # Compare les titres
 
     if new_entries:
         message = "🚀 Nouveaux projets trouvés sur Codeur.com :\n"
@@ -47,10 +49,10 @@ def check_new_projects():
         print("✅ Aucun nouveau projet détecté.")
 
 
-# 📌 Planification : Scraping toutes les 30 minutes
-schedule.every(30).minutes.do(check_new_projects)
+# 📌 Planification : Scraping toutes les 2 minutes
+schedule.every(2).minutes.do(check_new_projects)
 
-print("✅ Service de scraping lancé ! Il vérifie toutes les 30 minutes.")
+print("✅ Service de scraping lancé ! Il vérifie toutes les 2 minutes.")
 
 # 🔄 Boucle infinie pour garder le service actif
 while True:
