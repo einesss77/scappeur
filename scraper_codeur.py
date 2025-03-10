@@ -5,6 +5,22 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 import time
 import sqlite3
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+
+
+def get_driver():
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Mode sans interface graphique
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+
+    # Utiliser Chromium et ChromeDriver installés dans le conteneur
+    service = Service("/usr/bin/chromedriver")  # Chemin de ChromeDriver sur Fly.io
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+
+    return driver
 
 # Chemin vers ChromeDriver
 CHROMEDRIVER_PATH = "C:/Users/eines/OneDrive/Bureau/chromedriver-win64/chromedriver.exe"
