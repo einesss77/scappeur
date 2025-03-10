@@ -10,8 +10,8 @@ COPY . .
 # Installer les dépendances
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Exposer le port 5000 (Flask tourne dessus par défaut)
-EXPOSE 5000
+# Exposer le bon port
+EXPOSE 8080
 
-# Lancer l'application Flask
+# Lancer l'application Flask sur 0.0.0.0:8080
 CMD ["python", "server.py"]
