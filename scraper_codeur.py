@@ -6,7 +6,7 @@ from selenium.webdriver.common.keys import Keys
 import time
 import sqlite3
 
-# Utiliser directement les chemins Linux
+# Chemin vers le ChromeDriver sur le conteneur Linux
 CHROMEDRIVER_PATH = "/usr/bin/chromedriver"
 
 # Identifiants Codeur.com
@@ -22,16 +22,16 @@ CATEGORIES = {
     "Services": "https://www.codeur.com/projects/c/services"
 }
 
-# Configuration Selenium
-chrome_options = Options()
-chrome_options.add_argument("--headless")
-chrome_options.add_argument("--disable-gpu")
-chrome_options.add_argument("--window-size=1920x1080")
-chrome_options.add_argument("--no-sandbox")
-chrome_options.add_argument("--disable-dev-shm-usage")
-chrome_options.binary_location = "/usr/bin/chromium"
-
-service = Service(CHROMEDRIVER_PATH)
+# Config Selenium
+def get_driver():
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.binary_location = "/usr/bin/chromium"
+    service = Service(CHROMEDRIVER_PATH)
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+    return driver
 
 # Base de données SQLite
 DB_NAME = "projects.db"
@@ -46,6 +46,7 @@ def init_db():
             link TEXT UNIQUE,
             price TEXT,
             offers TEXT,
+            date_publication TEXT,
             category TEXT,
             status TEXT DEFAULT "Nouveau",
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -81,6 +82,7 @@ def scrape_category(driver, category, url):
             for link in driver.find_elements(By.CSS_SELECTOR, "a.no-underline.visited\\:text-visited")
         ]
         raw_prices = [price.text.strip() for price in driver.find_elements(By.CSS_SELECTOR, "span.whitespace-nowrap[data-controller='tooltip']")]
+        dates = [date.text.strip() for date in driver.find_elements(By.CSS_SELECTOR, "span.font-semibold")]
 
         prices, offers = [], []
         for price in raw_prices:
@@ -98,6 +100,7 @@ def scrape_category(driver, category, url):
                 "Lien": links[i],
                 "Prix": prices[i] if i < len(prices) else "Non spécifié",
                 "Offres": offers[i] if i < len(offers) else "Non spécifié",
+                "DatePublication": dates[i] if i < len(dates) else "Non spécifié",
                 "Catégorie": category
             })
 
@@ -115,19 +118,19 @@ def save_projects_to_db(projects):
     for project in projects:
         try:
             c.execute('''
-                INSERT INTO projects (title, link, price, offers, category, status)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (project["Titre"], project["Lien"], project["Prix"], project["Offres"], project["Catégorie"], "Nouveau"))
+                INSERT INTO projects (title, link, price, offers, date_publication, category, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (project["Titre"], project["Lien"], project["Prix"], project["Offres"], project["DatePublication"], project["Catégorie"], "Nouveau"))
             conn.commit()
             new_projects_count += 1
         except sqlite3.IntegrityError:
-            pass  # Ignore si le projet existe déjà
+            pass
 
     conn.close()
     print(f"✅ {new_projects_count} nouveaux projets ajoutés en base de données.")
 
 def scrape_projects():
-    driver = webdriver.Chrome(service=service, options=chrome_options)
+    driver = get_driver()
     try:
         login_to_codeur(driver)
         all_projects = []
