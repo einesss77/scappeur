@@ -5,25 +5,9 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 import time
 import sqlite3
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
 
-
-def get_driver():
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Mode sans interface graphique
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-
-    # Utiliser Chromium et ChromeDriver installés dans le conteneur
-    service = Service("/usr/bin/chromedriver")  # Chemin de ChromeDriver sur Fly.io
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-
-    return driver
-
-# Chemin vers ChromeDriver
-CHROMEDRIVER_PATH = "C:/Users/eines/OneDrive/Bureau/chromedriver-win64/chromedriver.exe"
+# Utiliser directement les chemins Linux
+CHROMEDRIVER_PATH = "/usr/bin/chromedriver"
 
 # Identifiants Codeur.com
 EMAIL = "admin@bandmdigitalconsulting.com"
@@ -40,18 +24,19 @@ CATEGORIES = {
 
 # Configuration Selenium
 chrome_options = Options()
-chrome_options.add_argument("--headless")  # Mode sans interface graphique
+chrome_options.add_argument("--headless")
 chrome_options.add_argument("--disable-gpu")
 chrome_options.add_argument("--window-size=1920x1080")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.binary_location = "/usr/bin/chromium"
+
 service = Service(CHROMEDRIVER_PATH)
 
 # Base de données SQLite
 DB_NAME = "projects.db"
 
 def init_db():
-    """ Initialise la base de données SQLite """
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute('''
@@ -70,7 +55,6 @@ def init_db():
     conn.close()
 
 def login_to_codeur(driver):
-    """Se connecte à Codeur.com"""
     driver.get("https://www.codeur.com/users/sign_in")
     time.sleep(3)
     try:
@@ -85,7 +69,6 @@ def login_to_codeur(driver):
         print(f"❌ Erreur lors de la connexion : {e}")
 
 def scrape_category(driver, category, url):
-    """Scrape une catégorie et retourne la liste des projets"""
     driver.get(url)
     time.sleep(3)
     print(f"📌 Scraping de la catégorie : {category}")
@@ -125,7 +108,6 @@ def scrape_category(driver, category, url):
         return []
 
 def save_projects_to_db(projects):
-    """Enregistre les projets en base de données en évitant les doublons"""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     new_projects_count = 0
@@ -145,7 +127,6 @@ def save_projects_to_db(projects):
     print(f"✅ {new_projects_count} nouveaux projets ajoutés en base de données.")
 
 def scrape_projects():
-    """Effectue le scraping de toutes les catégories et retourne les projets"""
     driver = webdriver.Chrome(service=service, options=chrome_options)
     try:
         login_to_codeur(driver)

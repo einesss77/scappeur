@@ -1,5 +1,4 @@
 import datetime
-
 import schedule
 import time
 import requests

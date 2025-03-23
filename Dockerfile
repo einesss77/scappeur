@@ -4,7 +4,7 @@ FROM python:3.9-slim
 # Définir le répertoire de travail
 WORKDIR /app
 
-# Installer les dépendances système (dont Google Chrome et ChromeDriver)
+# Installer les dépendances système (dont Chromium et ChromeDriver)
 RUN apt-get update && apt-get install -y \
     wget \
     unzip \
@@ -12,6 +12,10 @@ RUN apt-get update && apt-get install -y \
     chromium-driver \
     chromium && \
     rm -rf /var/lib/apt/lists/*
+
+# Définir les variables d'environnement pour Selenium
+ENV CHROME_BIN=/usr/bin/chromium
+ENV CHROMEDRIVER_BIN=/usr/bin/chromedriver
 
 # Copier les fichiers du projet
 COPY . .
